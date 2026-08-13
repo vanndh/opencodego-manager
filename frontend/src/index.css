@@ -1,0 +1,74 @@
+:root {
+  /* ─── Palette (RGB for tailwind alpha-modifiers) ─── */
+  --bg-rgb: 11 13 14;
+  --surface-rgb: 17 20 22;
+  --surface-2-rgb: 22 26 29;
+  --border-rgb: 36 41 45;
+  --border-muted-rgb: 26 30 34;
+  --text-primary-rgb: 232 232 227;
+  --text-secondary-rgb: 126 135 140;
+  --text-muted-rgb: 86 94 100;
+  --accent-primary-rgb: 63 185 80;
+  --accent-secondary-rgb: 210 153 34;
+  --accent-danger-rgb: 248 81 73;
+  --accent-info-rgb: 88 166 255;
+
+  /* ─── Fonts ─── */
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: rgb(var(--bg-rgb));
+  color: rgb(var(--text-primary-rgb));
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+::selection { background: rgb(var(--accent-primary-rgb) / 0.2); }
+
+/* thin scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(var(--border-rgb)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted-rgb)); }
+
+@layer components {
+  .ascii-bar { @apply font-mono text-mono tracking-tighter select-none; }
+
+  .pill {
+    @apply inline-flex items-center gap-1 font-mono text-tiny uppercase tracking-wider;
+    @apply px-1.5 py-0.5 rounded-sm border cursor-pointer select-none;
+  }
+  .pill-active { @apply text-accent border-accent/30 bg-accent/5; }
+  .pill-amber { @apply text-accent-2 border-accent-2/30 bg-accent-2/5; }
+  .pill-danger { @apply text-danger border-danger/30 bg-danger/5; }
+  .pill-muted { @apply text-text-secondary border-border hover:text-text-primary; }
+
+  .nav-item {
+    @apply flex items-center gap-2 px-3 py-1.5 cursor-pointer;
+    @apply text-text-secondary hover:text-text-primary transition-colors;
+  }
+  .nav-item-active { @apply text-text-primary bg-surface-2 rounded-sm; }
+
+  .card { @apply bg-surface border border-border rounded-md; }
+  .card-elevated { @apply bg-surface-2 border border-border rounded-md; }
+
+  .input {
+    @apply w-full bg-bg border border-border rounded-sm px-2.5 py-1.5;
+    @apply text-text-primary placeholder:text-text-muted;
+    @apply focus:outline-none focus:border-accent/50 transition-colors;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+}
