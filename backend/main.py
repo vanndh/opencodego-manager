@@ -1,22 +1,24 @@
 """FastAPI entrypoint.
 
 - /api/*  — REST для UI
-- /ws     — WebSocket hub (PHASE 4 stub, наполнение в след. фазах)
+- /ws     — WebSocket hub (realtime события)
+- /gateway — отдельный локальный API (поднимается опционально)
 - /       — статика собранного frontend (frontend/dist)
 """
 
 import threading
 import webbrowser
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
-from api import accounts, system
+from api import accounts, bonuses, creds, gateway, system
 from config import app as cfg
+from core.ws_hub import hub
 from security import vault
-from storage.db import init_db
+from storage.db import get_session, init_db
+from workers.registry import WorkerRegistry
 
 app = FastAPI(title=cfg.APP_NAME, version=cfg.APP_VERSION)
 
@@ -29,12 +31,33 @@ app.add_middleware(
 
 app.include_router(system.router)
 app.include_router(accounts.router)
+app.include_router(bonuses.router)
+app.include_router(creds.router)
+app.include_router(gateway.router)
+
+registry = WorkerRegistry()
 
 
 @app.on_event("startup")
 async def _startup():
     await init_db()
     vault.unlock()
+    registry.set_session_factory(get_session)
+
+
+@app.on_event("shutdown")
+async def _shutdown():
+    await registry.stop_all()
+
+
+@app.websocket("/ws")
+async def ws_endpoint(ws: WebSocket, since: int = 0):
+    await hub.connect(ws, since=since)
+    try:
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        hub.disconnect(ws)
 
 
 @app.get("/")

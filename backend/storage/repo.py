@@ -120,3 +120,17 @@ async def set_setting(session: AsyncSession, key: str, value: str):
     else:
         row.value = value
     await session.flush()
+
+
+# ── Session ──────────────────────────────────────────────────────────────────
+async def list_sessions(session: AsyncSession, account_id: int) -> list[models.Session]:
+    result = await session.execute(
+        select(models.Session).where(models.Session.account_id == account_id)
+    )
+    return list(result.scalars())
+
+
+async def delete_sessions(session: AsyncSession, account_id: int):
+    await session.execute(
+        delete(models.Session).where(models.Session.account_id == account_id)
+    )
